@@ -8,7 +8,7 @@
 #define WIDTH 1600
 #define HEIGHT 900
 
-#define N_Obj 50
+#define N_Obj 5
 #define GRAVITY_CONST 200.0 / N_Obj
 #define dt 0.1
 #define BOUNCE_FACTOR 0.5
@@ -20,7 +20,7 @@
 typedef struct {
     Vector2 pos;
     Vector2 vel;
-    int16_t mass;
+    int32_t mass;
     Vector2 trail[TRAIL_COUNT];
     int trailCount;
 } Object;
@@ -42,10 +42,11 @@ void randomize_objects(Object* objects, int count, int width, int height) {
         for (int j = 0; j < TRAIL_COUNT; j++) {
             objects[i].trail[j] = objects[i].pos;
         }
+        objects[i].trailCount = 0;
     }
 }
 
-void update_objects(Object* objects) {
+void update_objects(Object* objects, int trailIndex) {
     // Calculate all accelerations first
     Vector2 accelerations[N_Obj] = {0};
 
@@ -71,10 +72,7 @@ void update_objects(Object* objects) {
     // Apply accelerations and update positions
     for (int i = 0; i < N_Obj; i++) {
         // Update trail (shift all positions)
-        for (int j = TRAIL_COUNT - 1; j > 0; j--) {
-            objects[i].trail[j] = objects[i].trail[j - 1];
-        }
-        objects[i].trail[0] = objects[i].pos;
+        objects[i].trail[trailIndex] = objects[i].pos;
         if (objects[i].trailCount < TRAIL_COUNT) objects[i].trailCount++;
 
         objects[i].vel =
@@ -116,13 +114,15 @@ int main() {
     // srand((unsigned int)time(NULL));
     srand(0);
     Object objects[N_Obj];
+    int trailIndex = 0;
     randomize_objects(objects, N_Obj, screenWidth, screenHeight);
 
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
         // Update
-        update_objects(objects);
+        update_objects(objects, trailIndex);
+        trailIndex = (trailIndex + 1) % TRAIL_COUNT;
 
         // Draw
         BeginDrawing();
@@ -130,20 +130,23 @@ int main() {
         ClearBackground(RAYWHITE);
 
         for (int i = 0; i < N_Obj; i++) {
-            for (int j = 0; j < TRAIL_COUNT; j++) {
+            const float rad = RADIUS * objects[i].mass / 1000.0;
+            for (int j = trailIndex, count = TRAIL_COUNT - 1; count >= 0;
+                 count--) {
                 // Calculate alpha based on position in trail (newer positions =
                 // more opaque)
-                float alpha = (1.0f - (float)j / TRAIL_COUNT) * TRAIL_FADE;
+                float alpha = (1.0f - (float)count / TRAIL_COUNT) * TRAIL_FADE;
                 float trailRadius =
-                    RADIUS *
+                    rad *
                     (0.2f + 0.8f * alpha);  // Trail gets smaller as it fades
 
                 DrawCircleV(objects[i].trail[j], trailRadius,
                             ColorAlpha(BLACK, alpha));
+                j = (j + 1) % TRAIL_COUNT;
             }
 
             // Draw the current object
-            DrawCircleV(objects[i].pos, RADIUS, BLACK);
+            DrawCircleV(objects[i].pos, rad, BLACK);
         }
 
         EndDrawing();
