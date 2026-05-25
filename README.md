@@ -2,7 +2,7 @@
 
 **Gravity Simulation with Performance Benchmarking**
 
-![Gravity Simulation Demo](Screen%20Recording%202026-05-25%20at%2014.23.46.gif)
+![Gravity Simulation Demo](demo.gif)
 
 ## Overview
 
