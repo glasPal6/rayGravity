@@ -5,10 +5,10 @@
 #include "raylib.h"
 #include "raymath.h"
 
-#define WIDTH 1080
+#define WIDTH 1600
 #define HEIGHT 900
 
-#define N_Obj 10
+#define N_Obj 1000
 #define GRAVITY_CONST 200.0 / N_Obj
 #define dt 0.1
 #define BOUNCE_FACTOR 0.5
